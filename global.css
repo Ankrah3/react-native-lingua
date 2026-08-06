@@ -1,0 +1,78 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+
+@import "nativewind/theme";
+
+@import "./theme/tokens.css";
+
+/*
+ * BEM-inspired semantic utilities for the Lingua UI. Compose these with
+ * NativeWind spacing and layout utilities instead of duplicating type styles.
+ */
+@utility h1 {
+  font-family: var(--font-poppins-bold);
+  font-size: 32px;
+  line-height: 38.4px;
+  color: var(--color-text-primary);
+}
+
+@utility h2 {
+  font-family: var(--font-poppins-semibold);
+  font-size: 24px;
+  line-height: 31.2px;
+  color: var(--color-text-primary);
+}
+
+@utility h3 {
+  font-family: var(--font-poppins-semibold);
+  font-size: 20px;
+  line-height: 26px;
+  color: var(--color-text-primary);
+}
+
+@utility h4 {
+  font-family: var(--font-poppins-medium);
+  font-size: 16px;
+  line-height: 22.4px;
+  color: var(--color-text-primary);
+}
+
+@utility body-lg {
+  font-family: var(--font-poppins);
+  font-size: 16px;
+  line-height: 25.6px;
+  color: var(--color-text-primary);
+}
+
+@utility body-md {
+  font-family: var(--font-poppins);
+  font-size: 14px;
+  line-height: 22.4px;
+  color: var(--color-text-primary);
+}
+
+@utility body-sm {
+  font-family: var(--font-poppins);
+  font-size: 13px;
+  line-height: 20.8px;
+  color: var(--color-text-secondary);
+}
+
+@utility caption {
+  font-family: var(--font-poppins);
+  font-size: 11px;
+  line-height: 15.4px;
+  color: var(--color-text-secondary);
+}
+
+@utility ui-card {
+  border-width: 1px;
+  border-color: var(--color-border);
+  border-radius: 16px;
+  background-color: var(--color-background);
+}
+
+@utility ui-section {
+  background-color: var(--color-surface);
+}
