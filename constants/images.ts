@@ -1,4 +1,5 @@
 export const images = {
-  mascotLogo: require("@/assets/assets/images/moscot-logo.png"),
-  mascotWelcome: require("@/assets/assets/images/mascot-welcome.png"),
+  mascotLogo: require("../assets/images/moscot-logo.png"),
+  mascotWelcome: require("../assets/images/mascot-welcome.png"),
+  mascot: require("../assets/images/mascot-auth.png"),
 } as const;

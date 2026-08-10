@@ -1,3 +1,5 @@
 Read AGENTS.md first and follow it strictly.
 
-Create the learning content system using hardcoded TypeScript data. Add `types/learning.ts`, `data/languages.ts`, `data/units.ts`, and `data/lessons.ts`. Define supported languages, units, lessons, activities, vocabulary, phrases, lesson goals, and AI teacher prompts for future audio-based Vision Agent lessons. Include a small beginner-friendly sample dataset for a few languages and keep it simple, typed, and easy to extend.
+Create the learning content system using hardcoded TypeScript data. Add `types/learning.ts`, `data/languages.ts`, `data/units.ts`, and `data/lessons.ts`. Each language, unit, and lesson must use a unique, stable identifier field (`languageId`, `unitId`, `lessonId`) and explicit parent references (for example, `unit.languageId`, `lesson.unitId`), plus an explicit `order` numeric field for deterministic ordering.
+
+Define supported languages, units, lessons, activities, vocabulary, phrases, lesson goals, and AI teacher prompts for future audio-based Vision Agent lessons. Include a small beginner-friendly sample dataset for a few languages. Ensure other prompts and screens select languages and open lessons by these stable IDs and parent relationships rather than by title or array position.

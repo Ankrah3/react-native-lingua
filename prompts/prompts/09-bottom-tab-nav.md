@@ -1,9 +1,10 @@
+
 Read AGENTS.md first and follow it strictly.
 
-Implement only the bottom tab navigation based on the attached design. Create the tab routes for Home, Learn, AI Teacher, Chat, and Profile with simple placeholder screens for now.
+Implement the bottom tab navigation based on the attached design. Place the bottom-tab routes for Home, Learn, AI Teacher, Chat, and Profile inside the protected `(tabs)` route group so they are only reachable after authentication and language selection guards complete. Keep placeholder screens unchanged.
 
-Build a custom tab bar with an active circular indicator for the selected tab. The active tab should appear inside a colored circle showing only the icon (no label), while inactive tabs should show both icon and label. Add a smooth animated transition for the active circle moving between tabs.
+Build a custom tab bar that keeps an accessible name and `tab` role for each tab, and updates an explicit `selected` state even when the active label is visually hidden. Preserve the active circular indicator and inactive labels. Respect reduced-motion accessibility preferences by disabling the active-circle movement animation when the user's preferences indicate reduced motion.
 
-Do not implement the Home screen UI yet.
+Do not change the existing root entry flow used by Clerk authentication and language selection; ensure the tab navigator is reachable only after both checks complete rather than exposing `/` prematurely.
 
 @prompt_material/05-home-and-tab-navigation.png

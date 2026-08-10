@@ -1,12 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { images } from "@/constants/images";
 
 export default function OnboardingScreen() {
+  const router = useRouter();
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -18,6 +20,7 @@ export default function OnboardingScreen() {
             className="size-13"
             contentFit="contain"
           />
+
           <Text className="font-poppins-semibold text-[39px] leading-[47px] tracking-[-1px] text-text-primary">
             lingua
           </Text>
@@ -28,16 +31,16 @@ export default function OnboardingScreen() {
             Your AI language{"\n"}
             <Text className="text-lingua-purple">teacher.</Text>
           </Text>
-          <Text className=" font-poppins text-[17px] leading-[31px] text-text-secondary">
+
+          <Text className="font-poppins text-[17px] leading-[31px] text-text-secondary">
             Real conversations, personalized{"\n"}
             lessons, anytime, anywhere.
           </Text>
         </View>
 
-        {/* Graphic area: Hello! raised above the backpack/body, level with
-            ¡Hola! on the opposite side, 你好! on the right mid-height. */}
+        {/* Graphic area */}
         <View className="relative flex-1 items-center justify-center pb-4">
-          {/* Bubble 1 - Hello!, far left, raised to clear the backpack */}
+          {/* Hello! */}
           <View
             style={{
               position: "absolute",
@@ -53,7 +56,7 @@ export default function OnboardingScreen() {
             </Text>
           </View>
 
-          {/* Bubble 2 - ¡Hola!, raised further up, roughly centered/right */}
+          {/* ¡Hola! */}
           <View
             style={{
               position: "absolute",
@@ -69,7 +72,7 @@ export default function OnboardingScreen() {
             </Text>
           </View>
 
-          {/* Bubble 3 - 你好!, right side, mid-height, clear of the button */}
+          {/* 你好! */}
           <View
             style={{
               position: "absolute",
@@ -85,7 +88,7 @@ export default function OnboardingScreen() {
             </Text>
           </View>
 
-          {/* Mascot: unchanged size */}
+          {/* Mascot */}
           <Image
             source={images.mascotWelcome}
             className="-mt-4 mb-16 h-[320px] w-full"
@@ -94,10 +97,15 @@ export default function OnboardingScreen() {
           />
         </View>
 
-        <Pressable className="flex-row items-center justify-center gap-3 rounded-[23px] bg-lingua-purple py-6 active:bg-lingua-deep-purple">
+        {/* Get Started */}
+        <Pressable
+          onPress={() => router.push("/signup")}
+          className="flex-row items-center justify-center gap-3 rounded-[23px] bg-lingua-purple py-6 active:bg-lingua-deep-purple"
+        >
           <Text className="font-poppins-semibold text-[24px] text-white">
             Get Started
           </Text>
+
           <Ionicons name="chevron-forward" size={31} color="#FFFFFF" />
         </Pressable>
       </View>

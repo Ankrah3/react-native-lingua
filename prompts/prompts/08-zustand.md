@@ -1,5 +1,5 @@
 Read AGENTS.md first and follow it strictly.
 
-Integrate language selection state. Store the selected language using Zustand with the modern `@react-native-async-storage/async-storage` package. If an authenticated user has no selected language, route them to the language selection screen. Only after selecting a language should they access the home route (/). Preserve the existing UI exactly.
+Integrate language selection state. Store the selected language using Zustand with `@react-native-async-storage/async-storage`. Persist the selected `languageId` in a user-scoped storage key that includes the current authenticated Clerk `userId` (for example `selected_language_<userId>`), or ensure the persisted value is cleared on sign-out. This guarantees each authenticated user has their own selection. If an authenticated user has no selected language, route them to the language selection screen; only after selecting a language should they access the home route (`/`). Preserve the existing UI exactly.
 
-Add a button on home screen route to clear async storage for testing language selection state functionality
+Add a test button on the home screen that resets language selection for testing: the action must reset the in-memory Zustand state, remove the namespaced AsyncStorage key, and complete asynchronously (return a Promise) so any route guards can await it before re-evaluating navigation.

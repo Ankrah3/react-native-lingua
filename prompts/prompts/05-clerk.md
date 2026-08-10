@@ -1,13 +1,17 @@
 Read AGENTS.md first and follow it strictly.
 
-Study the existing auth screens and current mocked auth flow, then replace the mock behavior with real JavaScript Native Sign in Clerk authentication by following the Clerk documentation provided below. 
+Replace the current mocked auth flow with Clerk Expo JavaScript custom flow using `useSignIn` and `useSignUp`. Keep the existing screens and navigation intact. Add a root `ClerkProvider` (Expo) and configure a `tokenCache`; require the `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` in the environment. Keep all secret keys server-side only.
 
-Keep the existing UI and navigation flow intact. Implement email-based Sign Up, Sign In, social auth where supported, and verification code handling through Clerk. 
+Implement email-based Sign Up/Sign In, and social auth where supported, using the Clerk client-side flows and verification handling provided by Clerk. Preserve the screen designs exactly.
 
-After successful verification/authentication, navigate to the home route (/). If not authenticated, show onboarding route (/onboarding(. If authenticated, show home route (/). 
+Routing and guard behavior:
 
-Do not change the screen design. If there is any need, ask me before implementation
+- Wait for both Clerk authentication state and persisted language-state hydration before performing any routing decisions on the root route.
+- If the user is not authenticated, route them to `/onboarding`.
+- If the user is authenticated but has no persisted selected language, route them to the language selection route (documented elsewhere).
+- If the user is authenticated and has a persisted language, route them to the protected home route (`/`).
 
+Do not change visual layout. If changes are required for integration, ask before implementation.
 ---
 
 (Here paste the latest [**Clerk documentation**](https://clerk.com/docs/expo/getting-started/quickstart))
