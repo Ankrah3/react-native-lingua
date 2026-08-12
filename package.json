@@ -8,7 +8,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "verify-content": "node ./scripts/verify-content.mjs"
   },
   "dependencies": {
     "@clerk/expo": "^4.2.3",
