@@ -68,6 +68,7 @@ export default function LanguageSelectionScreen() {
       </View>
 
       <ScrollView
+        style={{ flex: 1 }}
         contentContainerStyle={{ padding: 20, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -171,15 +172,13 @@ export default function LanguageSelectionScreen() {
             Confirm selection
           </Text>
         </Pressable>
-
-        <View className="-mx-5 mt-8">
-          <Image
-            source={images.earth}
-            className="h-52 w-full"
-            contentFit="cover"
-          />
-        </View>
       </ScrollView>
+
+      <Image
+        source={images.earth}
+        className="h-52 w-full"
+        contentFit="cover"
+      />
     </SafeAreaView>
   );
 }
