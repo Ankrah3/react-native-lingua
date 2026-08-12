@@ -5,8 +5,9 @@ export type Language = {
   nativeName: string;
   flag: string;
   description: string;
-  learners: string;
+  learners: number;
   order: number;
+  comingSoon?: boolean;
 };
 
 export type Unit = {

@@ -1,8 +1,13 @@
 import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import path from "path";
 
-const lessons = readFileSync("data/lessons.ts", "utf8");
-const units = readFileSync("data/units.ts", "utf8");
-const languages = readFileSync("data/languages.ts", "utf8");
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const dataDir = path.join(scriptDir, "..", "data");
+
+const lessons = readFileSync(path.join(dataDir, "lessons.ts"), "utf8");
+const units = readFileSync(path.join(dataDir, "units.ts"), "utf8");
+const languages = readFileSync(path.join(dataDir, "languages.ts"), "utf8");
 
 // Match only top-level Lesson objects (lessonId immediately followed by
 // unitId then languageId), so nested Activity.lessonId references aren't
@@ -24,6 +29,27 @@ const unitLangByUnitId = new Map(
   [...units.matchAll(/unitId: "([^"]+)",\s*\n\s*languageId: "([^"]+)"/g)].map(
     (m) => [m[1], m[2]],
   ),
+);
+
+// A language entry's block runs from its languageId match up to the next
+// one (or end of file), so field order elsewhere in the object doesn't matter.
+const languageIdMatches = [...languages.matchAll(/languageId: "([^"]+)"/g)];
+const comingSoonLangs = new Set(
+  languageIdMatches
+    .filter((m, i) => {
+      const end =
+        i + 1 < languageIdMatches.length
+          ? languageIdMatches[i + 1].index
+          : languages.length;
+      return /comingSoon:\s*true/.test(languages.slice(m.index, end));
+    })
+    .map((m) => m[1]),
+);
+const unitLangs = new Set([...units.matchAll(/languageId: "([^"]+)"/g)].map((m) => m[1]));
+const lessonLangs = new Set(langIds);
+const languagesMissingContent = definedLangs.filter(
+  (id) =>
+    !comingSoonLangs.has(id) && !(unitLangs.has(id) && lessonLangs.has(id)),
 );
 
 const dupLessons = lessonIds.filter((id, i) => lessonIds.indexOf(id) !== i);
@@ -49,6 +75,10 @@ if (mismatchedParents.length)
     `Lesson(s) whose languageId doesn't match their unit's languageId: ${mismatchedParents
       .map((m) => m.lessonId)
       .join(", ")}`,
+  );
+if (languagesMissingContent.length)
+  problems.push(
+    `Language(s) defined without units/lessons content (add content or mark comingSoon: true): ${languagesMissingContent.join(", ")}`,
   );
 
 if (problems.length) {

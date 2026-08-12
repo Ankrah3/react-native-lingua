@@ -1,3 +1,4 @@
+import { getUnitById } from "@/data/units";
 import type { Lesson } from "@/types/learning";
 
 export const lessons: Lesson[] = [
@@ -597,7 +598,7 @@ export const lessons: Lesson[] = [
         lessonId: "chinese-basics-2",
         order: 2,
         type: "fill-blank",
-        prompt: "Fill in the missing word: --- 见！",
+        prompt: "Fill in the missing word: ___ 见！",
       },
     ],
     aiTeacherPrompt:
@@ -806,7 +807,7 @@ export const lessons: Lesson[] = [
         lessonId: "chinese-classroom-2",
         order: 1,
         type: "fill-blank",
-        prompt: "Fill in the blank: --- 再说一遍。",
+        prompt: "Fill in the blank: ___ 再说一遍。",
       },
       {
         activityId: "chinese-classroom-2-a2",
@@ -1078,7 +1079,12 @@ export function getLessonById(lessonId: string): Lesson | undefined {
 export function getLessonsByLanguage(languageId: string): Lesson[] {
   return lessons
     .filter((lesson) => lesson.languageId === languageId)
-    .sort((a, b) => a.order - b.order);
+    .sort((a, b) => {
+      const unitOrderA = getUnitById(a.unitId)?.order ?? 0;
+      const unitOrderB = getUnitById(b.unitId)?.order ?? 0;
+      if (unitOrderA !== unitOrderB) return unitOrderA - unitOrderB;
+      return a.order - b.order;
+    });
 }
 
 export function getLessonsByUnit(unitId: string): Lesson[] {

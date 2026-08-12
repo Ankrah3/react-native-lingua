@@ -4,7 +4,7 @@ import { getLanguagesByOrder } from "@/data/languages";
 import useLanguageStore from "@/store/useLanguageStore";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -14,6 +14,14 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+function formatLearners(count: number): string {
+  const formatted = new Intl.NumberFormat("en", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(count);
+  return `${formatted} ${count === 1 ? "learner" : "learners"}`;
+}
+
 export default function LanguageSelectionScreen() {
   const router = useRouter();
   const { selectedLanguageId, setSelectedLanguageId } = useLanguageStore();
@@ -22,6 +30,10 @@ export default function LanguageSelectionScreen() {
   );
   const [query, setQuery] = useState("");
   const languages = useMemo(() => getLanguagesByOrder(), []);
+
+  useEffect(() => {
+    setPendingLanguageId(selectedLanguageId);
+  }, [selectedLanguageId]);
 
   const visibleLanguages = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -75,45 +87,74 @@ export default function LanguageSelectionScreen() {
           Popular
         </Text>
 
-        <View className="gap-3">
-          {visibleLanguages.map((language) => {
-            const selected = pendingLanguageId === language.languageId;
-            return (
-              <Pressable
-                key={language.languageId}
-                onPress={() => setPendingLanguageId(language.languageId)}
-                className={`flex-row items-center rounded-3xl border p-4 ${
-                  selected
-                    ? "border-lingua-purple bg-[#F5F3FF]"
-                    : "border-border bg-white"
-                }`}
-              >
-                <Image
-                  source={{ uri: language.flag }}
-                  className="size-11 rounded-full"
-                  contentFit="cover"
-                />
+        {visibleLanguages.length > 0 ? (
+          <View className="gap-3">
+            {visibleLanguages.map((language) => {
+              const selected = pendingLanguageId === language.languageId;
+              const disabled = language.comingSoon;
+              return (
+                <Pressable
+                  key={language.languageId}
+                  onPress={() =>
+                    !disabled && setPendingLanguageId(language.languageId)
+                  }
+                  disabled={disabled}
+                  className={`flex-row items-center rounded-3xl border p-4 ${
+                    disabled
+                      ? "border-border bg-surface opacity-60"
+                      : selected
+                        ? "border-lingua-purple bg-[#F5F3FF]"
+                        : "border-border bg-white"
+                  }`}
+                >
+                  <Image
+                    source={{ uri: language.flag }}
+                    className="size-11 rounded-full"
+                    contentFit="cover"
+                  />
 
-                <View className="ml-3 flex-1">
-                  <Text className="font-poppins-semibold text-base text-text-primary">
-                    {language.label}
-                  </Text>
-                  <Text className="mt-0.5 font-poppins text-sm text-text-secondary">
-                    {language.learners}
-                  </Text>
-                </View>
-
-                {selected ? (
-                  <View className="size-7 items-center justify-center rounded-full bg-lingua-purple">
-                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                  <View className="ml-3 flex-1">
+                    <Text className="font-poppins-semibold text-base text-text-primary">
+                      {language.label}
+                    </Text>
+                    <Text className="mt-0.5 font-poppins text-sm text-text-secondary">
+                      {disabled
+                        ? "Coming soon"
+                        : formatLearners(language.learners)}
+                    </Text>
                   </View>
-                ) : (
-                  <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-                )}
-              </Pressable>
-            );
-          })}
-        </View>
+
+                  {disabled ? null : selected ? (
+                    <View className="size-7 items-center justify-center rounded-full bg-lingua-purple">
+                      <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                    </View>
+                  ) : (
+                    <Ionicons
+                      name="chevron-forward"
+                      size={20}
+                      color="#9CA3AF"
+                    />
+                  )}
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : (
+          <View className="items-center gap-3 py-10">
+            <Text className="font-poppins-semibold text-base text-text-primary">
+              No languages found
+            </Text>
+            <Text className="text-center font-poppins text-sm text-text-secondary">
+              We couldn&apos;t find a language matching &quot;{query}
+              &quot;.
+            </Text>
+            <Pressable onPress={() => setQuery("")} hitSlop={8}>
+              <Text className="font-poppins-semibold text-sm text-lingua-purple">
+                Clear search
+              </Text>
+            </Pressable>
+          </View>
+        )}
 
         <Pressable
           onPress={handleConfirm}
