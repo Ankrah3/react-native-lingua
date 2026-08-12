@@ -1,11 +1,12 @@
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 type Props = {
   label: string;
   icon: "google" | "facebook" | "apple";
   className?: string;
+  onPress?: () => void;
 };
 
 const ICON_NAMES: Record<
@@ -17,7 +18,7 @@ const ICON_NAMES: Record<
   apple: "apple",
 };
 
-export default function SocialButton({ label, icon, className = "" }: Props) {
+export default function SocialButton({ label, icon, className = "", onPress }: Props) {
   const circleStyle = {
     width: 36,
     height: 36,
@@ -35,6 +36,7 @@ export default function SocialButton({ label, icon, className = "" }: Props) {
 
   return (
     <TouchableOpacity
+      onPress={onPress}
       className={
         "flex-row items-center bg-white border border-gray-200 rounded-xl py-3 px-4 " +
         className

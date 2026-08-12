@@ -12,13 +12,17 @@ import {
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onVerified: () => void;
+  onVerified: (code: string) => void;
+  title?: string;
+  subtitle?: string;
 };
 
 export default function VerificationModal({
   visible,
   onClose,
   onVerified,
+  title = "Verify your email",
+  subtitle = "We've sent a 6-digit code to your email. Enter it below.",
 }: Props) {
   const [digits, setDigits] = useState<string[]>(["", "", "", "", "", ""]);
   const refs = useRef<(TextInput | null)[]>([]);
@@ -45,7 +49,7 @@ export default function VerificationModal({
       const code = next.join("");
       if (code.length === 6) {
         setTimeout(() => {
-          onVerified();
+          onVerified(code);
         }, 250);
       }
     }
@@ -58,12 +62,8 @@ export default function VerificationModal({
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View className="bg-white rounded-t-2xl px-6 py-6 shadow-lg">
-          <Text className="text-lg font-semibold text-[#0A1B3A]">
-            Verify your email
-          </Text>
-          <Text className="text-sm text-gray-500 mt-2">
-            We've sent a 6-digit code to your email. Enter it below.
-          </Text>
+          <Text className="text-lg font-semibold text-[#0A1B3A]">{title}</Text>
+          <Text className="text-sm text-gray-500 mt-2">{subtitle}</Text>
 
           <View className="flex-row justify-between mt-6 px-2">
             {digits.map((d, i) => (
