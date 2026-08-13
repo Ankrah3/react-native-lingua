@@ -146,16 +146,12 @@ export default function SignIn() {
           <View className="items-center mt-2">
             <Image
               source={images.mascot}
-              style={{
-                width: 220,
-                height: 180,
-                resizeMode: "contain",
-                marginBottom: -30,
-              }}
+              className="w-[220px] h-[180px] -mb-[30px]"
+              style={{ resizeMode: "contain" }}
             />
           </View>
 
-          <View className="mt-4 space-y-4" style={{ marginTop: -28 }}>
+          <View className="-mt-7 space-y-4">
             <AuthTextInput
               label="Email"
               value={email}

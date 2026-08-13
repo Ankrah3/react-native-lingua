@@ -1,5 +1,6 @@
 import { useAuth } from "@clerk/expo";
 import { Redirect, Tabs } from "expo-router";
+import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 
 import TabBar from "@/components/TabBar";
@@ -9,9 +10,16 @@ export default function TabsLayout() {
   const { isLoaded, isSignedIn, userId } = useAuth();
   const selectedLanguageId = useLanguageStore((s) => s.selectedLanguageId);
   const hydratedUserId = useLanguageStore((s) => s.hydratedUserId);
+  const hydrate = useLanguageStore((s) => s.hydrate);
 
   const isHydratedForUser =
     isSignedIn && userId ? hydratedUserId === userId : true;
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn && userId && hydratedUserId !== userId) {
+      hydrate(userId);
+    }
+  }, [isLoaded, isSignedIn, userId, hydratedUserId, hydrate]);
 
   if (!isLoaded || !isHydratedForUser) {
     return (

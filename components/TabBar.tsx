@@ -22,7 +22,6 @@ const TAB_ICONS: Record<string, { active: IconName; inactive: IconName }> = {
   profile: { active: "person", inactive: "person-outline" },
 };
 
-const INDICATOR_SIZE = 44;
 const ACTIVE_COLOR = "#6C4EF5";
 const INACTIVE_COLOR = "#6B7280";
 
@@ -50,22 +49,16 @@ export default function TabBar({
 
   return (
     <View
-      className="flex-row border-t border-border bg-white pt-2"
-      style={{ paddingBottom: 20 }}
+      className="flex-row border-t border-border bg-white pt-2 pb-5"
       onLayout={handleLayout}
     >
       {tabWidth > 0 ? (
         <Animated.View
           pointerEvents="none"
-          style={[
-            { position: "absolute", top: 4, width: tabWidth, alignItems: "center" },
-            indicatorStyle,
-          ]}
+          className="absolute top-1 items-center"
+          style={[{ width: tabWidth }, indicatorStyle]}
         >
-          <View
-            className="rounded-full bg-lingua-purple/10"
-            style={{ width: INDICATOR_SIZE, height: INDICATOR_SIZE }}
-          />
+          <View className="size-11 rounded-full bg-lingua-purple/10" />
         </Animated.View>
       ) : null}
 

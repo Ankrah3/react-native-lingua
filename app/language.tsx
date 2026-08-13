@@ -68,7 +68,7 @@ export default function LanguageSelectionScreen() {
       </View>
 
       <ScrollView
-        style={{ flex: 1 }}
+        className="flex-1"
         contentContainerStyle={{ padding: 20, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
