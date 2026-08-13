@@ -2,7 +2,7 @@ import { useUser } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -28,6 +28,9 @@ export default function HomeScreen() {
   const router = useRouter();
   const { user } = useUser();
   const selectedLanguageId = useLanguageStore((s) => s.selectedLanguageId);
+  const resetSelectedLanguage = useLanguageStore(
+    (s) => s.resetSelectedLanguage,
+  );
 
   const selectedLanguage = useMemo(
     () =>
@@ -39,6 +42,13 @@ export default function HomeScreen() {
     () => (selectedLanguage ? buildHomeViewModel(selectedLanguage) : null),
     [selectedLanguage],
   );
+
+  useEffect(() => {
+    if (selectedLanguageId && !selectedLanguage) {
+      resetSelectedLanguage();
+      router.replace("/language");
+    }
+  }, [selectedLanguageId, selectedLanguage, resetSelectedLanguage, router]);
 
   if (!home) {
     return <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }} />;
@@ -75,13 +85,11 @@ export default function HomeScreen() {
                 {home.streakDays}
               </Text>
             </View>
-            <Pressable hitSlop={8}>
-              <Ionicons
-                name="notifications-outline"
-                size={24}
-                color="#0D132B"
-              />
-            </Pressable>
+            <Ionicons
+              name="notifications-outline"
+              size={24}
+              color="#0D132B"
+            />
           </View>
         </View>
 
@@ -149,44 +157,53 @@ export default function HomeScreen() {
         </View>
 
         <View className="mx-5 mt-3">
-          {home.todayPlan.map((item, index) => (
-            <Pressable
-              key={item.id}
-              onPress={() => router.push("/(tabs)/learn")}
-              className={`flex-row items-center py-3 ${
-                index < home.todayPlan.length - 1
-                  ? "border-b border-border"
-                  : ""
-              }`}
-            >
-              <View
-                className={`size-11 items-center justify-center rounded-2xl ${PLAN_ICON_BG[item.icon]}`}
+          {home.todayPlan.map((item, index) => {
+            const isLocked = item.status === "locked";
+
+            return (
+              <Pressable
+                key={item.id}
+                disabled={isLocked}
+                onPress={() => router.push("/(tabs)/learn")}
+                className={`flex-row items-center py-3 ${
+                  index < home.todayPlan.length - 1
+                    ? "border-b border-border"
+                    : ""
+                } ${isLocked ? "opacity-60" : ""}`}
               >
-                <Ionicons
-                  name={PLAN_ICON[item.icon]}
-                  size={20}
-                  color="#FFFFFF"
-                />
-              </View>
-
-              <View className="ml-3 flex-1">
-                <Text className="font-poppins-semibold text-base text-text-primary">
-                  {item.title}
-                </Text>
-                <Text className="mt-0.5 font-poppins text-sm text-text-secondary">
-                  {item.subtitle}
-                </Text>
-              </View>
-
-              {item.status === "completed" ? (
-                <View className="size-7 items-center justify-center rounded-full bg-lingua-purple">
-                  <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                <View
+                  className={`size-11 items-center justify-center rounded-2xl ${PLAN_ICON_BG[item.icon]}`}
+                >
+                  <Ionicons
+                    name={PLAN_ICON[item.icon]}
+                    size={20}
+                    color="#FFFFFF"
+                  />
                 </View>
-              ) : (
-                <View className="size-7 rounded-full border-2 border-border" />
-              )}
-            </Pressable>
-          ))}
+
+                <View className="ml-3 flex-1">
+                  <Text className="font-poppins-semibold text-base text-text-primary">
+                    {item.title}
+                  </Text>
+                  <Text className="mt-0.5 font-poppins text-sm text-text-secondary">
+                    {item.subtitle}
+                  </Text>
+                </View>
+
+                {item.status === "completed" ? (
+                  <View className="size-7 items-center justify-center rounded-full bg-lingua-purple">
+                    <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                  </View>
+                ) : isLocked ? (
+                  <View className="size-7 items-center justify-center rounded-full border-2 border-border">
+                    <Ionicons name="lock-closed" size={12} color="#9CA3AF" />
+                  </View>
+                ) : (
+                  <View className="size-7 rounded-full border-2 border-border" />
+                )}
+              </Pressable>
+            );
+          })}
         </View>
       </ScrollView>
     </SafeAreaView>
