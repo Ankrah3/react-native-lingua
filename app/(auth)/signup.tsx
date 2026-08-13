@@ -22,6 +22,7 @@ export default function SignUp() {
   const { isLoaded, isSignedIn } = useAuth();
   const { signUp } = useSignUp();
   const { startSSOFlow } = useSSO();
+  const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -44,6 +45,7 @@ export default function SignUp() {
     const { error } = await signUp.password({
       emailAddress: email,
       password,
+      firstName: firstName.trim() || undefined,
     });
 
     if (error) {
@@ -154,16 +156,18 @@ export default function SignUp() {
           <View className="items-center mt-2">
             <Image
               source={images.mascot}
-              style={{
-                width: 220,
-                height: 180,
-                resizeMode: "contain",
-                marginBottom: -30,
-              }}
+              className="w-[220px] h-[180px] -mb-[30px]"
+              style={{ resizeMode: "contain" }}
             />
           </View>
 
-          <View className="mt-4 space-y-4" style={{ marginTop: -28 }}>
+          <View className="-mt-7 space-y-4">
+            <AuthTextInput
+              label="First name"
+              value={firstName}
+              onChangeText={setFirstName}
+              autoCapitalize="words"
+            />
             <AuthTextInput
               label="Email"
               value={email}

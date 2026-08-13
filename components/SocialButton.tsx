@@ -19,15 +19,6 @@ const ICON_NAMES: Record<
 };
 
 export default function SocialButton({ label, icon, className = "", onPress }: Props) {
-  const circleStyle = {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  } as const;
-
   // Simple brand-like tints for each provider
   const bgColor =
     icon === "google" ? "#FFFFFF" : icon === "facebook" ? "#1877F2" : "#000000";
@@ -43,7 +34,10 @@ export default function SocialButton({ label, icon, className = "", onPress }: P
       }
       activeOpacity={0.8}
     >
-      <View style={{ ...circleStyle, backgroundColor: bgColor }}>
+      <View
+        className="w-9 h-9 rounded-[10px] items-center justify-center mr-3"
+        style={{ backgroundColor: bgColor }}
+      >
         <FontAwesome name={ICON_NAMES[icon]} size={20} color={iconColor} />
       </View>
 

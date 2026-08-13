@@ -8,6 +8,7 @@ type Props = {
   onChangeText: (t: string) => void;
   secureTextEntry?: boolean;
   keyboardType?: any;
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
 };
 
 export default function AuthTextInput({
@@ -16,6 +17,7 @@ export default function AuthTextInput({
   onChangeText,
   secureTextEntry,
   keyboardType,
+  autoCapitalize = "none",
 }: Props) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
@@ -28,7 +30,7 @@ export default function AuthTextInput({
           onChangeText={onChangeText}
           secureTextEntry={secureTextEntry && !isPasswordVisible}
           keyboardType={keyboardType}
-          autoCapitalize="none"
+          autoCapitalize={autoCapitalize}
           className="flex-1 text-base text-[#111827]"
           placeholder={label}
         />
