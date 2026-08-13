@@ -5,6 +5,7 @@ import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { images } from "@/constants/images";
+import { posthog } from "@/lib/posthog";
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -99,7 +100,10 @@ export default function OnboardingScreen() {
 
         {/* Get Started */}
         <Pressable
-          onPress={() => router.push("/(auth)/signup")}
+          onPress={() => {
+            posthog?.capture("onboarding_started");
+            router.push("/(auth)/signup");
+          }}
           className="flex-row items-center justify-center gap-3 rounded-[23px] bg-lingua-purple py-6 active:bg-lingua-deep-purple"
         >
           <Text className="font-poppins-semibold text-[24px] text-white">

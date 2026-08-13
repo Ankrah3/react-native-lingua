@@ -16,6 +16,7 @@ import AuthTextInput from "../../components/AuthTextInput";
 import SocialButton from "../../components/SocialButton";
 import VerificationModal from "../../components/VerificationModal";
 import { images } from "../../constants/images";
+import { posthog } from "../../lib/posthog";
 
 export default function SignUp() {
   const router = useRouter();
@@ -76,6 +77,7 @@ export default function SignUp() {
       });
 
       if (createdSessionId) {
+        posthog?.capture("sign_up_completed", { auth_method: provider });
         router.replace("/");
       }
     } catch (err) {
@@ -129,6 +131,7 @@ export default function SignUp() {
     }
 
     setModalOpen(false);
+    posthog?.capture("sign_up_completed", { auth_method: "email" });
     router.replace("/");
   };
 

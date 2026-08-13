@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { images } from "@/constants/images";
 import { getLanguagesByOrder } from "@/data/languages";
 import useLanguageStore from "@/store/useLanguageStore";
+import { posthog } from "@/lib/posthog";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
@@ -47,6 +48,9 @@ export default function LanguageSelectionScreen() {
 
   const handleConfirm = () => {
     if (!pendingLanguageId) return;
+    posthog?.capture("language_selected", {
+      language_id: pendingLanguageId,
+    });
     setSelectedLanguageId(pendingLanguageId);
     router.replace("/");
   };
