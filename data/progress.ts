@@ -39,7 +39,11 @@ export function buildHomeViewModel(language: Language): HomeViewModel {
   const current =
     currentIndex >= 0 ? lessons[currentIndex] : lessons[lessons.length - 1];
   const lastCompleted =
-    currentIndex > 0 ? lessons[currentIndex - 1] : lessons[0];
+    currentIndex === -1
+      ? lessons[lessons.length - 1]
+      : currentIndex > 0
+        ? lessons[currentIndex - 1]
+        : undefined;
   const currentUnit = current ? getUnitById(current.unitId) : undefined;
 
   const todayPlan: TodayPlanItem[] = [];

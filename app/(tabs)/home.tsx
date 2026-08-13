@@ -109,7 +109,7 @@ export default function HomeScreen() {
 
         <Pressable
           onPress={() => router.push("/(tabs)/learn")}
-          className="mx-5 mt-4 overflow-hidden rounded-3xl bg-gradient-to-br from-lingua-purple to-lingua-blue p-5"
+          className="mx-5 mt-4 overflow-hidden rounded-3xl bg-lingua-purple p-5"
         >
           <Text className="font-poppins text-sm text-white/80">
             Continue learning
