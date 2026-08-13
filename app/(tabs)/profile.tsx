@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { posthog } from "@/lib/posthog";
 import useLanguageStore from "@/store/useLanguageStore";
 
 export default function ProfileScreen() {
@@ -13,6 +14,7 @@ export default function ProfileScreen() {
   );
 
   const handleSignOut = async () => {
+    posthog?.capture("signed_out");
     await signOut();
     router.replace("/onboarding");
   };

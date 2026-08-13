@@ -9,6 +9,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { images } from "@/constants/images";
 import { getLanguageById } from "@/data/languages";
 import { buildHomeViewModel } from "@/data/progress";
+import { posthog } from "@/lib/posthog";
 import useLanguageStore from "@/store/useLanguageStore";
 import type { TodayPlanIcon } from "@/types/progress";
 
@@ -116,7 +117,15 @@ export default function HomeScreen() {
         </View>
 
         <Pressable
-          onPress={() => router.push("/(tabs)/learn")}
+          onPress={() => {
+            posthog?.capture("learning_continued", {
+              language_id: selectedLanguageId,
+              ...(home.currentUnit
+                ? { unit_order: home.currentUnit.order }
+                : {}),
+            });
+            router.push("/(tabs)/learn");
+          }}
           className="mx-5 mt-4 overflow-hidden rounded-3xl bg-lingua-purple p-5"
         >
           <Text className="font-poppins text-sm text-white/80">
@@ -164,7 +173,15 @@ export default function HomeScreen() {
               <Pressable
                 key={item.id}
                 disabled={isLocked}
-                onPress={() => router.push("/(tabs)/learn")}
+                onPress={() => {
+                  posthog?.capture("learning_plan_item_opened", {
+                    item_id: item.id,
+                    item_type: item.icon,
+                    item_status: item.status,
+                    language_id: selectedLanguageId,
+                  });
+                  router.push("/(tabs)/learn");
+                }}
                 className={`flex-row items-center py-3 ${
                   index < home.todayPlan.length - 1
                     ? "border-b border-border"

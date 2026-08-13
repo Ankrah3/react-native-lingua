@@ -16,6 +16,7 @@ import AuthTextInput from "../../components/AuthTextInput";
 import SocialButton from "../../components/SocialButton";
 import VerificationModal from "../../components/VerificationModal";
 import { images } from "../../constants/images";
+import { posthog } from "../../lib/posthog";
 
 export default function SignIn() {
   const router = useRouter();
@@ -52,6 +53,7 @@ export default function SignIn() {
         setErrorMessage(finalizeError.message ?? "Unable to complete sign in.");
         return;
       }
+      posthog?.capture("sign_in_completed", { auth_method: "password" });
       router.replace("/");
       return;
     }
@@ -88,6 +90,7 @@ export default function SignIn() {
       });
 
       if (createdSessionId) {
+        posthog?.capture("sign_in_completed", { auth_method: provider });
         router.replace("/");
       }
     } catch (err) {
@@ -115,6 +118,7 @@ export default function SignIn() {
         return;
       }
       setModalOpen(false);
+      posthog?.capture("sign_in_completed", { auth_method: "email_mfa" });
       router.replace("/");
       return;
     }
