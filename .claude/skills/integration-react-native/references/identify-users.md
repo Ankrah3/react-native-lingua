@@ -4,8 +4,6 @@
 
 Copy page
 
-# Identify users - Docs
-
 Linking events to specific users enables you to build a full picture of how they're using your product across different sessions, devices, and platforms.
 
 This is straightforward to do when [capturing backend events](/docs/product-analytics/capture-events?tab=Node.js.md), as you associate events to a specific user using a `distinct_id`, which is a required argument.
@@ -16,7 +14,7 @@ To link events to specific users, call `identify`:
 
 PostHog AI
 
-### Web
+## Web
 
 ```javascript
 posthog.identify(
@@ -25,7 +23,7 @@ posthog.identify(
 );
 ```
 
-### Android
+## Android
 
 ```kotlin
 PostHog.identify(
@@ -38,14 +36,14 @@ PostHog.identify(
 )
 ```
 
-### iOS
+## iOS
 
 ```swift
 PostHogSDK.shared.identify("distinct_id", // Replace "distinct_id" with your user's unique identifier
                            userProperties: ["name": "Max Hedgehog", "email": "max@hedgehogmail.com"]) // optional: set additional person properties
 ```
 
-### React Native
+## React Native
 
 ```jsx
 posthog.identify('distinct_id', { // Replace "distinct_id" with your user's unique identifier
@@ -54,7 +52,7 @@ posthog.identify('distinct_id', { // Replace "distinct_id" with your user's uniq
 })
 ```
 
-### Dart
+## Dart
 
 ```dart
 await Posthog().identify(
@@ -194,7 +192,7 @@ This enables you to set [person properties](/docs/product-analytics/person-prope
 
 Whenever possible, we recommend passing in all person properties you have available each time you call identify, as this ensures their person profile on PostHog is up to date.
 
-Person properties can also be set being adding a `$set` property to a event `capture` call.
+Person properties can also be set by adding a `$set` property to an event `capture` call.
 
 **\`$set\` and \`$set\_once\` aren't stored on events**
 
@@ -204,7 +202,7 @@ See our [person properties docs](/docs/product-analytics/person-properties.md) f
 
 ### 5\. Use deep links between platforms
 
-We recommend you call `identify` [as soon as you're able](#1-call-identify-as-soon-as-youre-able), typically when a user signs up or logs in.
+We recommend you call `identify` [as soon as you're able](#1-call-identify-as-soon-as-youre-able-to), typically when a user signs up or logs in.
 
 This doesn't work if one or both platforms are unauthenticated. Some examples of such cases are:
 
@@ -227,7 +225,7 @@ Here's an example implementation for handling deep links from web to mobile:
 
 PostHog AI
 
-### iOS
+#### iOS
 
 ```swift
 import PostHog
@@ -261,7 +259,7 @@ class DeepLinkIdentityManager {
 }
 ```
 
-### Android
+#### Android
 
 ```kotlin
 import android.net.Uri

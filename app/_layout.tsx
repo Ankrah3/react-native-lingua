@@ -41,16 +41,12 @@ function PostHogIdentity() {
     if (!isLoaded) return;
 
     if (!isSignedIn || !userId) {
-      if (identifiedUserId.current) {
-        posthog?.reset();
-        identifiedUserId.current = null;
-      }
+      posthog?.reset();
+      identifiedUserId.current = null;
       return;
     }
 
-    if (identifiedUserId.current === userId) return;
-
-    if (identifiedUserId.current) {
+    if (identifiedUserId.current && identifiedUserId.current !== userId) {
       posthog?.reset();
     }
 
