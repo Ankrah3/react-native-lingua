@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ComponentProps } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, {
@@ -126,7 +126,12 @@ function AudioLessonSession({ lesson }: { lesson: Lesson }) {
       lesson_id: lesson.lessonId,
     });
     const timer = setTimeout(() => setStatus("online"), 900);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      posthog?.capture("ai_teacher_session_ended", {
+        lesson_id: lesson.lessonId,
+      });
+    };
   }, [lesson.lessonId]);
 
   const pulse = useSharedValue(1);
@@ -147,9 +152,20 @@ function AudioLessonSession({ lesson }: { lesson: Lesson }) {
     transform: [{ scale: pulse.value }],
   }));
 
+  const replayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const micTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (replayTimer.current) clearTimeout(replayTimer.current);
+      if (micTimer.current) clearTimeout(micTimer.current);
+    };
+  }, []);
+
   const handleReplay = () => {
+    if (replayTimer.current) clearTimeout(replayTimer.current);
     setIsSpeaking(true);
-    setTimeout(() => setIsSpeaking(false), 1600);
+    replayTimer.current = setTimeout(() => setIsSpeaking(false), 1600);
   };
 
   const handleMicToggle = () => {
@@ -157,14 +173,12 @@ function AudioLessonSession({ lesson }: { lesson: Lesson }) {
     setIsMuted(nextMuted);
     if (!nextMuted) {
       setHasPracticed(true);
-      setTimeout(handleReplay, 400);
+      if (micTimer.current) clearTimeout(micTimer.current);
+      micTimer.current = setTimeout(handleReplay, 400);
     }
   };
 
   const handleEndCall = () => {
-    posthog?.capture("ai_teacher_session_ended", {
-      lesson_id: lesson.lessonId,
-    });
     if (router.canGoBack()) {
       router.back();
     } else {

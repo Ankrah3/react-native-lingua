@@ -229,11 +229,9 @@ function LessonRow({
             In progress
           </Text>
         ) : null}
-        {isLocked ? (
-          <Text className="mt-0.5 font-poppins text-xs text-text-secondary">
-            {item.durationMinutes} min • {item.xpReward} XP
-          </Text>
-        ) : null}
+        <Text className="mt-0.5 font-poppins text-xs text-text-secondary">
+          {item.durationMinutes} min • {item.xpReward} XP
+        </Text>
       </View>
 
       {isCompleted ? (

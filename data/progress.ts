@@ -151,9 +151,9 @@ export function buildLessonsViewModel(
     unitOrder: currentUnit?.order ?? 1,
     unitCompleted,
     unitTotal: unitLessons.length,
-    items: lessons.map((lesson, index) => ({
+    items: lessons.map((lesson) => ({
       lessonId: lesson.lessonId,
-      order: index + 1,
+      order: lesson.order,
       title: lesson.title,
       status: statuses.get(lesson.lessonId) ?? "locked",
       durationMinutes: lesson.durationMinutes,
