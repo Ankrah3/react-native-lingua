@@ -23,3 +23,22 @@ export type HomeViewModel = {
   currentLesson: { lessonId: string; title: string } | null;
   todayPlan: TodayPlanItem[];
 };
+
+export type LessonListItem = {
+  lessonId: string;
+  order: number;
+  title: string;
+  status: LessonStatus;
+  durationMinutes: number;
+  xpReward: number;
+};
+
+export type LessonsViewModel = {
+  languageId: string;
+  languageLabel: string;
+  headerTitle: string;
+  unitOrder: number;
+  unitCompleted: number;
+  unitTotal: number;
+  items: LessonListItem[];
+};

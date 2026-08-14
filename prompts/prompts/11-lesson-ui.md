@@ -1,4 +1,3 @@
-
 Read AGENTS.md first and follow it strictly.
 
 Implement the Lessons screen exactly as shown in the attached design. Use the selected language from Zustand + AsyncStorage and display the matching units/lessons from the hardcoded learning data.
