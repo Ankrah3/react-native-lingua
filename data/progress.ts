@@ -1,7 +1,12 @@
-import { getLessonsByLanguage } from "@/data/lessons";
+import { getLessonsByLanguage, getLessonsByUnit } from "@/data/lessons";
 import { getUnitById } from "@/data/units";
-import type { Language } from "@/types/learning";
-import type { HomeViewModel, LessonStatus, TodayPlanItem } from "@/types/progress";
+import type { Language, Lesson } from "@/types/learning";
+import type {
+  HomeViewModel,
+  LessonsViewModel,
+  LessonStatus,
+  TodayPlanItem,
+} from "@/types/progress";
 
 /**
  * Static fixture standing in for real lesson-completion tracking. Keyed by
@@ -27,15 +32,35 @@ export function getLessonStatus(
   return isCurrent ? "in-progress" : "locked";
 }
 
+function getCurrentLessonIndex(lessons: Lesson[]): number {
+  return lessons.findIndex((lesson) => !completedLessonIds.has(lesson.lessonId));
+}
+
+/**
+ * Shared status source keyed by lessonId, used by both Home and the Lessons
+ * screen so progress never diverges between the two.
+ */
+export function getLanguageLessonStatuses(
+  languageId: string,
+): Map<string, LessonStatus> {
+  const languageLessons = getLessonsByLanguage(languageId);
+  const currentIndex = getCurrentLessonIndex(languageLessons);
+
+  return new Map(
+    languageLessons.map((lesson, index) => [
+      lesson.lessonId,
+      getLessonStatus(lesson.lessonId, index === currentIndex),
+    ]),
+  );
+}
+
 function stripGreetingPunctuation(text: string): string {
   return text.replace(/[¡！!？?]/g, "").trim();
 }
 
 export function buildHomeViewModel(language: Language): HomeViewModel {
   const lessons = getLessonsByLanguage(language.languageId);
-  const currentIndex = lessons.findIndex(
-    (lesson) => !completedLessonIds.has(lesson.lessonId),
-  );
+  const currentIndex = getCurrentLessonIndex(lessons);
   const current =
     currentIndex >= 0 ? lessons[currentIndex] : lessons[lessons.length - 1];
   const lastCompleted =
@@ -100,5 +125,39 @@ export function buildHomeViewModel(language: Language): HomeViewModel {
       ? { lessonId: current.lessonId, title: current.title }
       : null,
     todayPlan,
+  };
+}
+
+export function buildLessonsViewModel(
+  language: Language,
+): LessonsViewModel | null {
+  const lessons = getLessonsByLanguage(language.languageId);
+  if (lessons.length === 0) return null;
+
+  const statuses = getLanguageLessonStatuses(language.languageId);
+  const currentIndex = getCurrentLessonIndex(lessons);
+  const current =
+    currentIndex >= 0 ? lessons[currentIndex] : lessons[lessons.length - 1];
+  const currentUnit = getUnitById(current.unitId);
+  const unitLessons = getLessonsByUnit(current.unitId);
+  const unitCompleted = unitLessons.filter(
+    (lesson) => statuses.get(lesson.lessonId) === "completed",
+  ).length;
+
+  return {
+    languageId: language.languageId,
+    languageLabel: language.label,
+    headerTitle: current.title,
+    unitOrder: currentUnit?.order ?? 1,
+    unitCompleted,
+    unitTotal: unitLessons.length,
+    items: lessons.map((lesson, index) => ({
+      lessonId: lesson.lessonId,
+      order: index + 1,
+      title: lesson.title,
+      status: statuses.get(lesson.lessonId) ?? "locked",
+      durationMinutes: lesson.durationMinutes,
+      xpReward: lesson.xpReward,
+    })),
   };
 }
