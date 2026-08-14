@@ -103,6 +103,7 @@ function AudioLessonSession({ lesson }: { lesson: Lesson }) {
   const router = useRouter();
   const [status, setStatus] = useState<SessionStatus>("connecting");
   const [isMuted, setIsMuted] = useState(true);
+  const [isCameraOn, setIsCameraOn] = useState(false);
   const [subtitlesOn, setSubtitlesOn] = useState(true);
   const [hasPracticed, setHasPracticed] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -239,6 +240,12 @@ function AudioLessonSession({ lesson }: { lesson: Lesson }) {
       </View>
 
       <View className="mx-8 mt-5 flex-row items-start justify-between">
+        <ControlButton
+          icon={isCameraOn ? "videocam" : "videocam-off"}
+          label="Camera"
+          active={isCameraOn}
+          onPress={() => setIsCameraOn((prev) => !prev)}
+        />
         <ControlButton
           icon={isMuted ? "mic-off" : "mic"}
           label="Mic"
