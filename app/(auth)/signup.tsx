@@ -1,5 +1,6 @@
 import { useAuth, useSignUp } from "@clerk/expo";
 import { useSSO } from "@clerk/expo/experimental";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -7,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -195,9 +197,16 @@ export default function SignUp() {
           <TouchableOpacity
             onPress={handleSignUp}
             activeOpacity={0.9}
-            className="mt-6 bg-gradient-to-r from-[#6C3BFF] to-[#7B61FF] py-4 rounded-2xl items-center"
+            className="mt-6 rounded-2xl overflow-hidden"
           >
-            <Text className="text-white text-lg font-medium">Sign Up</Text>
+            <LinearGradient
+              colors={["#6C3BFF", "#7B61FF"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradientButton}
+            >
+              <Text className="text-white text-lg font-medium">Sign Up</Text>
+            </LinearGradient>
           </TouchableOpacity>
 
           <View className="flex-row items-center my-6">
@@ -249,3 +258,10 @@ export default function SignUp() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  gradientButton: {
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+});

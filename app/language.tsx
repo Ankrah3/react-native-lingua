@@ -3,7 +3,7 @@ import { images } from "@/constants/images";
 import { getLanguagesByOrder } from "@/data/languages";
 import useLanguageStore from "@/store/useLanguageStore";
 import { posthog } from "@/lib/posthog";
-import { Image } from "expo-image";
+import { Image } from "@/lib/image";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {

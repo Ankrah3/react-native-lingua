@@ -1,5 +1,5 @@
 import { useAuth } from "@clerk/expo";
-import { Image } from "expo-image";
+import { Image } from "@/lib/image";
 import { Link, useRouter } from "expo-router";
 import React, { useEffect, useMemo } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";

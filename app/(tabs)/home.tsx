@@ -1,6 +1,6 @@
 import { useUser } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
+import { Image } from "@/lib/image";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
