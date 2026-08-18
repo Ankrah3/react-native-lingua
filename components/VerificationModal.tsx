@@ -3,6 +3,7 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -76,7 +77,7 @@ export default function VerificationModal({
                 onChangeText={(t) => onChangeText(t, i)}
                 keyboardType="number-pad"
                 maxLength={1}
-                className="w-12 h-14 text-center border border-gray-200 rounded-lg text-lg"
+                style={styles.digitInput}
                 textContentType="oneTimeCode"
                 importantForAutofill="yes"
               />
@@ -93,3 +94,15 @@ export default function VerificationModal({
     </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  digitInput: {
+    width: 48,
+    height: 56,
+    textAlign: "center",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 8,
+    fontSize: 18,
+  },
+});

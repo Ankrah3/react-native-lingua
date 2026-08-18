@@ -1,9 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
+import {
+  CallingState,
+  FloatingParticipantView,
+  StreamCall,
+  useCall,
+  useCallStateHooks,
+} from "@stream-io/video-react-native-sdk";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ComponentProps } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, {
   useAnimatedStyle,
@@ -15,11 +22,17 @@ import Animated, {
 
 import { images } from "@/constants/images";
 import { getLessonById } from "@/data/lessons";
+import { useLessonCall } from "@/hooks/useLessonCall";
+import {
+  useVisionAgentSession,
+  type AgentConnectionStatus,
+} from "@/hooks/useVisionAgentSession";
 import { posthog } from "@/lib/posthog";
+import useLanguageStore from "@/store/useLanguageStore";
 import type { Lesson } from "@/types/learning";
 
 type IonName = ComponentProps<typeof Ionicons>["name"];
-type SessionStatus = "connecting" | "online";
+type StatusVariant = "connecting" | "reconnecting" | "online";
 type TeacherLine = { text: string; translation: string };
 
 const PRAISE_BY_LANGUAGE: Record<string, TeacherLine> = {
@@ -99,11 +112,100 @@ function SessionUnavailable({
   );
 }
 
+function AudioLessonLoading({ lesson }: { lesson: Lesson }) {
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
+      <View className="flex-1 items-center justify-center px-8">
+        <Image
+          source={images.mascotWelcome}
+          style={{ width: 160, height: 160 }}
+          contentFit="contain"
+        />
+        <ActivityIndicator
+          size="large"
+          color="#6C4EF5"
+          style={{ marginTop: 16 }}
+        />
+        <Text className="mt-4 text-center font-poppins-semibold text-base text-text-primary">
+          Connecting to your AI teacher...
+        </Text>
+        <Text className="mt-1 text-center font-poppins text-sm text-text-secondary">
+          {lesson.title}
+        </Text>
+      </View>
+    </SafeAreaView>
+  );
+}
+
 function AudioLessonSession({ lesson }: { lesson: Lesson }) {
   const router = useRouter();
-  const [status, setStatus] = useState<SessionStatus>("connecting");
-  const [isMuted, setIsMuted] = useState(true);
-  const [isCameraOn, setIsCameraOn] = useState(false);
+  const selectedLanguageId = useLanguageStore((s) => s.selectedLanguageId);
+  const { call, phase, errorMessage } = useLessonCall(
+    lesson,
+    selectedLanguageId,
+  );
+
+  const goToLessons = () => router.replace("/(tabs)/learn");
+
+  useEffect(() => {
+    posthog?.capture("ai_teacher_session_started", {
+      lesson_id: lesson.lessonId,
+    });
+    return () => {
+      posthog?.capture("ai_teacher_session_ended", {
+        lesson_id: lesson.lessonId,
+      });
+    };
+  }, [lesson.lessonId]);
+
+  if (phase === "error") {
+    return (
+      <SessionUnavailable
+        title="Couldn't start the call"
+        message={
+          errorMessage ??
+          "Something went wrong connecting to your AI teacher. Please try again."
+        }
+        onPress={goToLessons}
+      />
+    );
+  }
+
+  if (!call || phase === "loading") {
+    return <AudioLessonLoading lesson={lesson} />;
+  }
+
+  return (
+    <StreamCall call={call}>
+      <AudioLessonCallUI lesson={lesson} />
+    </StreamCall>
+  );
+}
+
+function AudioLessonCallUI({ lesson }: { lesson: Lesson }) {
+  const router = useRouter();
+  const call = useCall();
+  const {
+    useCallCallingState,
+    useMicrophoneState,
+    useCameraState,
+    useLocalParticipant,
+  } = useCallStateHooks();
+  const callingState = useCallCallingState();
+  const { status: micStatus } = useMicrophoneState();
+  const { status: cameraStatus } = useCameraState();
+  const localParticipant = useLocalParticipant();
+
+  const { status: agentStatus, endSession: endAgentSession } =
+    useVisionAgentSession(lesson);
+
+  const isMuted = micStatus !== "enabled";
+  const isCameraOn = cameraStatus === "enabled";
+  const isOnline = callingState === CallingState.JOINED;
+  const isReconnecting = callingState === CallingState.RECONNECTING;
+  const hasEnded =
+    callingState === CallingState.LEFT || callingState === CallingState.OFFLINE;
+
   const [subtitlesOn, setSubtitlesOn] = useState(true);
   const [hasPracticed, setHasPracticed] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -121,19 +223,6 @@ function AudioLessonSession({ lesson }: { lesson: Lesson }) {
   };
 
   const teacherLine = hasPracticed ? praise : opening;
-
-  useEffect(() => {
-    posthog?.capture("ai_teacher_session_started", {
-      lesson_id: lesson.lessonId,
-    });
-    const timer = setTimeout(() => setStatus("online"), 900);
-    return () => {
-      clearTimeout(timer);
-      posthog?.capture("ai_teacher_session_ended", {
-        lesson_id: lesson.lessonId,
-      });
-    };
-  }, [lesson.lessonId]);
 
   const pulse = useSharedValue(1);
 
@@ -155,6 +244,7 @@ function AudioLessonSession({ lesson }: { lesson: Lesson }) {
 
   const replayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const micTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wasMicEnabled = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -169,17 +259,39 @@ function AudioLessonSession({ lesson }: { lesson: Lesson }) {
     replayTimer.current = setTimeout(() => setIsSpeaking(false), 1600);
   };
 
-  const handleMicToggle = () => {
-    const nextMuted = !isMuted;
-    setIsMuted(nextMuted);
-    if (!nextMuted) {
+  // Every time the real mic goes from muted -> unmuted, treat it as the
+  // learner having practiced the phrase and have the teacher respond.
+  useEffect(() => {
+    const isEnabled = micStatus === "enabled";
+    if (isEnabled && !wasMicEnabled.current) {
       setHasPracticed(true);
       if (micTimer.current) clearTimeout(micTimer.current);
       micTimer.current = setTimeout(handleReplay, 400);
     }
+    wasMicEnabled.current = isEnabled;
+  }, [micStatus]);
+
+  const handleMicToggle = async () => {
+    try {
+      await call?.microphone.toggle();
+    } catch (err) {
+      console.error("Failed to toggle microphone", err);
+    }
   };
 
-  const handleEndCall = () => {
+  const handleCameraToggle = async () => {
+    try {
+      await call?.camera.toggle();
+    } catch (err) {
+      console.error("Failed to toggle camera", err);
+    }
+  };
+
+  const handleEndCall = async () => {
+    await endAgentSession();
+    if (call && call.state.callingState !== CallingState.LEFT) {
+      await call.leave().catch((err) => console.error(err));
+    }
     if (router.canGoBack()) {
       router.back();
     } else {
@@ -187,9 +299,29 @@ function AudioLessonSession({ lesson }: { lesson: Lesson }) {
     }
   };
 
+  if (hasEnded) {
+    return (
+      <SessionUnavailable
+        title="Call ended"
+        message="Your practice session with the AI teacher has ended."
+        onPress={() => router.replace("/(tabs)/learn")}
+      />
+    );
+  }
+
+  const statusVariant: StatusVariant = isOnline
+    ? "online"
+    : isReconnecting
+      ? "reconnecting"
+      : "connecting";
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
-      <Header lesson={lesson} status={status} onBack={handleEndCall} />
+      <Header
+        lesson={lesson}
+        statusVariant={statusVariant}
+        onBack={handleEndCall}
+      />
 
       <View className="mx-5 mt-3 flex-1 overflow-hidden rounded-3xl bg-surface">
         <View className="absolute -top-10 -left-10 size-40 rounded-full bg-lingua-purple/10" />
@@ -199,6 +331,21 @@ function AudioLessonSession({ lesson }: { lesson: Lesson }) {
           <Text className="font-poppins-semibold text-xs text-text-primary">
             Lesson {lesson.order} • {lesson.title}
           </Text>
+        </View>
+
+        {localParticipant ? (
+          <View className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-1.5 shadow-sm shadow-black/10">
+            <Text className="font-poppins-semibold text-xs text-text-primary">
+              {localParticipant.name || "You"}
+            </Text>
+          </View>
+        ) : null}
+
+        <View
+          className="absolute inset-x-0 top-14 items-center"
+          pointerEvents="none"
+        >
+          <AgentStatusPill status={agentStatus} />
         </View>
 
         <Animated.View
@@ -211,6 +358,17 @@ function AudioLessonSession({ lesson }: { lesson: Lesson }) {
             contentFit="contain"
           />
         </Animated.View>
+
+        {isCameraOn && localParticipant ? (
+          <View className="absolute inset-0" pointerEvents="box-none">
+            <FloatingParticipantView
+              participant={localParticipant}
+              alignment="top-right"
+              draggableContainerStyle={{ paddingTop: 48 }}
+              participantViewStyle={{ borderRadius: 16 }}
+            />
+          </View>
+        ) : null}
 
         <View className="absolute inset-x-5 bottom-5 flex-row items-start rounded-2xl bg-white p-4 shadow-md shadow-black/10">
           <View className="flex-1 pr-3">
@@ -241,16 +399,16 @@ function AudioLessonSession({ lesson }: { lesson: Lesson }) {
 
       <View className="mx-8 mt-5 flex-row items-start justify-between">
         <ControlButton
-          icon={isCameraOn ? "videocam" : "videocam-off"}
-          label="Camera"
-          active={isCameraOn}
-          onPress={() => setIsCameraOn((prev) => !prev)}
-        />
-        <ControlButton
           icon={isMuted ? "mic-off" : "mic"}
           label="Mic"
           active={!isMuted}
           onPress={handleMicToggle}
+        />
+        <ControlButton
+          icon={isCameraOn ? "videocam" : "videocam-off"}
+          label="Camera"
+          active={isCameraOn}
+          onPress={handleCameraToggle}
         />
         <ControlButton
           icon="language"
@@ -296,14 +454,25 @@ function AudioLessonSession({ lesson }: { lesson: Lesson }) {
 
 function Header({
   lesson,
-  status,
+  statusVariant,
   onBack,
 }: {
   lesson: Lesson;
-  status: SessionStatus;
+  statusVariant: StatusVariant;
   onBack: () => void;
 }) {
-  const isOnline = status === "online";
+  const statusLabel =
+    statusVariant === "online"
+      ? "Online"
+      : statusVariant === "reconnecting"
+        ? "Reconnecting..."
+        : "Connecting...";
+  const dotClassName =
+    statusVariant === "online"
+      ? "bg-lingua-green"
+      : statusVariant === "reconnecting"
+        ? "bg-warning"
+        : "bg-text-secondary";
 
   return (
     <View className="flex-row items-center px-5 pt-2">
@@ -316,13 +485,9 @@ function Header({
           AI Teacher
         </Text>
         <View className="mt-0.5 flex-row items-center gap-1.5">
-          <View
-            className={`size-1.5 rounded-full ${
-              isOnline ? "bg-lingua-green" : "bg-text-secondary"
-            }`}
-          />
+          <View className={`size-1.5 rounded-full ${dotClassName}`} />
           <Text className="font-poppins text-xs text-text-secondary">
-            {isOnline ? "Online" : "Connecting..."}
+            {statusLabel}
           </Text>
         </View>
       </View>
@@ -372,6 +537,34 @@ function ControlButton({
         {label}
       </Text>
     </Pressable>
+  );
+}
+
+function AgentStatusPill({ status }: { status: AgentConnectionStatus }) {
+  const label =
+    status === "connected"
+      ? "AI teacher online"
+      : status === "connecting"
+        ? "Connecting to AI teacher..."
+        : status === "failed"
+          ? "AI teacher unavailable"
+          : "AI teacher";
+  const dotClassName =
+    status === "connected"
+      ? "bg-lingua-green"
+      : status === "connecting"
+        ? "bg-warning"
+        : status === "failed"
+          ? "bg-error"
+          : "bg-text-secondary";
+
+  return (
+    <View className="flex-row items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 shadow-sm shadow-black/10">
+      <View className={`size-1.5 rounded-full ${dotClassName}`} />
+      <Text className="font-poppins-medium text-xs text-text-primary">
+        {label}
+      </Text>
+    </View>
   );
 }
 

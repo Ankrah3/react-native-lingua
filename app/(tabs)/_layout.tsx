@@ -3,6 +3,7 @@ import { Redirect, Tabs } from "expo-router";
 import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 
+import StreamVideoProvider from "@/components/StreamVideoProvider";
 import TabBar from "@/components/TabBar";
 import useLanguageStore from "@/store/useLanguageStore";
 
@@ -29,24 +30,26 @@ export default function TabsLayout() {
     );
   }
 
-  if (!isSignedIn) {
+  if (!isSignedIn || !userId) {
     return <Redirect href="/" />;
   }
 
-  if (!selectedLanguageId) {
-    return <Redirect href="/language" />;
-  }
-
   return (
-    <Tabs
-      tabBar={(props) => <TabBar {...props} />}
-      screenOptions={{ headerShown: false }}
-    >
-      <Tabs.Screen name="home" options={{ title: "Home" }} />
-      <Tabs.Screen name="learn" options={{ title: "Learn" }} />
-      <Tabs.Screen name="ai-teacher" options={{ title: "AI Teacher" }} />
-      <Tabs.Screen name="chat" options={{ title: "Chat" }} />
-      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
-    </Tabs>
+    <StreamVideoProvider userId={userId}>
+      {!selectedLanguageId ? (
+        <Redirect href="/language" />
+      ) : (
+        <Tabs
+          tabBar={(props) => <TabBar {...props} />}
+          screenOptions={{ headerShown: false }}
+        >
+          <Tabs.Screen name="home" options={{ title: "Home" }} />
+          <Tabs.Screen name="learn" options={{ title: "Learn" }} />
+          <Tabs.Screen name="ai-teacher" options={{ title: "AI Teacher" }} />
+          <Tabs.Screen name="chat" options={{ title: "Chat" }} />
+          <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+        </Tabs>
+      )}
+    </StreamVideoProvider>
   );
 }
