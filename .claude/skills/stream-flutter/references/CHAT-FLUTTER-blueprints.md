@@ -68,7 +68,13 @@ import 'package:flutter/material.dart';
 import 'package:stream_chat_flutter/stream_chat_flutter.dart';
 
 class ChannelListPage extends StatefulWidget {
-  const ChannelListPage({super.key});
+  const ChannelListPage({super.key, this.onChannelTap, this.selectedChannel});
+
+  /// Overrides the default push-navigation tap behavior (used by split-view).
+  final ValueChanged<Channel>? onChannelTap;
+
+  /// Highlights the active row when this page is the list pane of a split-view.
+  final Channel? selectedChannel;
 
   @override
   State<ChannelListPage> createState() => _ChannelListPageState();
@@ -91,20 +97,33 @@ class _ChannelListPageState extends State<ChannelListPage> {
     super.dispose();
   }
 
+  void _onChannelTap(Channel channel) {
+    if (widget.onChannelTap != null) {
+      widget.onChannelTap!(channel);
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => StreamChannel(
+          channel: channel,
+          child: const ChannelPage(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Messages')),
     body: StreamChannelListView(
       controller: _listController,
-      onChannelTap: (channel) => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => StreamChannel(
-            channel: channel,
-            child: const ChannelPage(),
-          ),
-        ),
-      ),
+      onChannelTap: _onChannelTap,
+      itemBuilder: widget.selectedChannel == null
+          ? null
+          : (context, channels, index, defaultWidget) => defaultWidget.copyWith(
+              selected: channels[index].cid == widget.selectedChannel!.cid,
+            ),
     ),
   );
 }
@@ -117,6 +136,7 @@ class _ChannelListPageState extends State<ChannelListPage> {
 - `SortOption.desc('last_message_at')` sorts by most recent activity
 - `StreamChannel` wraps each destination so `ChannelPage` widgets can access channel state
 - Call `_listController.dispose()` in `State.dispose()` to clean up WebSocket listeners
+- `onChannelTap` / `selectedChannel` are optional - omitted (as in the App Entry Point Blueprint's `home: const ChannelListPage()`), the page pushes `ChannelPage` itself; passed (as in the Split View Blueprint), the caller controls selection and no navigation occurs
 
 ---
 
